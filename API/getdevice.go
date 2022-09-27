@@ -5,14 +5,54 @@ import (
 	// "net/http"
 	"os"
 	"github.com/joho/godotenv"
+	"time"
+	"strconv"
+	"crypto/sha256"
+	"crypto/hmac"
+	"net/http"
 )
-func main(){
-	token, secret := loadEnv()
-	fmt.Println(token,secret)
+
+type Headers struct{
+	Authorization string
+	sign string
+	t string
+	nonce string
 }
 
-func sign(string, string) (string, string, string){
-	return "a","b","c"
+type Paramaters struct{
+
+}
+
+func main(){
+	token, secret := loadEnv()
+	t, sign, nonce := sign(token, secret)
+	fmt.Println(t,sign,nonce)
+	url := "https://api.switch-bot.com/v1.1/devices"
+	req, _ := http.NewRequest("GET",url, nil)
+	req,Header.Set()
+	resp, err := http.Get("")
+}
+
+func sign(token string, secret string) (string, string, string){
+	t := strconv.FormatInt(time.Now().Unix()*1000, 10)
+	var nonce = ""
+	string_to_sign := token + t + nonce
+	byte_sign, _ := getBinaryBySHA256WithKey(string_to_sign, secret)
+	sign := string(byte_sign)
+	return t, sign, nonce
+}
+
+
+
+
+func getBinaryBySHA256(s string) []byte {
+    r := sha256.Sum256([]byte(s))
+    return r[:]
+}
+func getBinaryBySHA256WithKey(msg, key string) ([]byte, error) {
+    mac := hmac.New(sha256.New, getBinaryBySHA256(key))
+    _, err := mac.Write([]byte(msg))
+    return mac.Sum(nil), err
 }
 
 func loadEnv() (string, string){
